@@ -1,18 +1,19 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcryptjs';
+import { compare, hash } from 'bcryptjs';
 import { UserRepository } from 'src/shared/database/repositories/user.repositories';
 import { AuthenticateDto } from './dtos/authenticate.dto';
+import { SignupDto } from './dtos/signup.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userRepository: UserRepository,
+    private readonly usersRepository: UserRepository,
     private readonly jwtService: JwtService
   ) {}
 
   async authenticate(authenticateDto: AuthenticateDto) {
-    const user = await this.userRepository.findUnique({
+    const user = await this.usersRepository.findUnique({
       where: {
         email: authenticateDto.email
       }
@@ -34,6 +35,55 @@ export class AuthService {
 
     return {
       accessToken
+    }
+  }
+
+  async signup(signupDto: SignupDto) {
+    const { name, email, password } = signupDto
+
+    const emailTaken = await this.usersRepository.findUnique({
+      where: { email },
+      select: { id: true },
+    })
+
+    if (emailTaken) {
+      throw new ConflictException('Email already taken')
+    }
+
+    const hashedPassword = await hash(password, 12)
+
+    const user = await this.usersRepository.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        categories: {
+          createMany: {
+            data: [
+              // Income
+              { name: 'Salário', icon: 'salary', type: 'INCOME' },
+              { name: 'Freelancer', icon: 'freelancer', type: 'INCOME' },
+              { name: 'Outro', icon: 'other', type: 'INCOME' },
+              // Expenses
+              { name: 'Casa', icon: 'home', type: 'EXPENSE' },
+              { name: 'Alimentação', icon: 'food', type: 'INCOME' },
+              { name: 'Educação', icon: 'education', type: 'INCOME' },
+              { name: 'Lazer', icon: 'fun', type: 'INCOME' },
+              { name: 'Mercado', icon: 'grocery', type: 'EXPENSE' },
+              { name: 'Roupas', icon: 'clothes', type: 'EXPENSE' },
+              { name: 'Transporte', icon: 'transport', type: 'EXPENSE' },
+              { name: 'Viagem', icon: 'travel', type: 'EXPENSE' },
+              { name: 'Outro', icon: 'other', type: 'EXPENSE' },
+            ]
+          }
+        }
+      }
+    })
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email
     }
   }
 }
