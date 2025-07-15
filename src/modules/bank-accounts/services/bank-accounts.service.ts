@@ -6,7 +6,8 @@ import { CheckBankAccountOwnershipService } from './check-bank-account-ownership
 
 @Injectable()
 export class BankAccountsService {
-  constructor(private readonly bankAccountsRepository: BankAccountsRepository,
+  constructor(
+    private readonly bankAccountsRepository: BankAccountsRepository,
     private readonly checkBankAccountOwnershipService: CheckBankAccountOwnershipService
   ) {}
 
