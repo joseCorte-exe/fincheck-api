@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put } from '
 import { ActiveUserId } from 'src/shared/decorators/active-user-id';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { TransactionsService } from './transactions.service';
+import { TransactionsService } from './services/transactions.service';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -23,14 +23,18 @@ export class TransactionsController {
 
   @Put(':transactionId')
   update(
+    @ActiveUserId() userId: string,
     @Param('transactionId', ParseUUIDPipe) transactionId: string,
     @Body() updateTransactionDto: UpdateTransactionDto
   ) {
-    return this.transactionsService.update(transactionId, updateTransactionDto);
+    return this.transactionsService.update(userId, transactionId, updateTransactionDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.transactionsService.remove(id);
+  @Delete(':transactionId')
+  remove(
+    @ActiveUserId() userId: string,
+    @Param('transactionId', ParseUUIDPipe) transactionId: string,
+  ) {
+    return this.transactionsService.remove(userId, transactionId);
   }
 }
