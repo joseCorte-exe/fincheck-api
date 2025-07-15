@@ -20,7 +20,14 @@ export const env: Env = plainToInstance(Env, {
 
 const errors = validateSync(env)
 
-console.error(JSON.stringify(errors, null, 2))
+if (errors.length > 0) {
+  console.error('Environment validation errors:')
+  console.error('Please ensure all environment variables are set correctly.')
+  console.error('The following errors were found:')
+  errors.forEach(error => {
+    console.error(`- ${error.property}: ${Object.values(error.constraints || {}).join(', ')}`)
+  })
+}
 
 if (errors.length > 0) {
   throw new Error(JSON.stringify(errors, null, 2))

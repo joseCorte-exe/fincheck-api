@@ -106,3 +106,7 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
   docker run --name pg -e POSTGRES_USER=root -e POSTGRES_PASSWORD=root -p 5432:5432 -d postgres
 
   docker exec -it pg bash
+
+  OR
+
+  sudo docker start pg
